@@ -121,6 +121,7 @@ objects:
 
 
           containers:
+
           - capabilities: {}
             env:
             - name: POSTGRESQL_USER
@@ -161,6 +162,11 @@ objects:
               limits:
                 memory: ${MEMORY_LIMIT}
             securityContext:
+              privileged: true
+              readOnlyRootFilesystem: false
+
+
+
               fsGroup: 26
             terminationMessagePath: /dev/termination-log
             volumeMounts:
