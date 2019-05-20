@@ -1,73 +1,67 @@
 apiVersion: v1
 kind: Template
 metadata:
+  annotations:
   creationTimestamp: null
-  name: hasura-graphql
+  name: hasura
 objects:
-- apiVersion: v1
-  kind: Template
-  metadata:
-    annotations:
-    creationTimestamp: null
-    name: hasura
-  objects:
-    - apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        labels:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app: hasura
+        hasuraService: custom
+      name: hasura
+      namespace: default
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
           app: hasura
-          hasuraService: custom
-        name: hasura
-        namespace: default
-      spec:
-        replicas: 1
-        selector:
-          matchLabels:
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
             app: hasura
-        template:
-          metadata:
-            creationTimestamp: null
-            labels:
-              app: hasura
-          spec:
-            containers:
-            - image: hasura/graphql-engine:${HASURA_VERSION}
-              imagePullPolicy: IfNotPresent
-              name: hasura
-              env:
-              - name: HASURA_GRAPHQL_DATABASE_URL
-                value: postgres://username:password@hostname:port/dbname
-              - name: HASURA_GRAPHQL_ENABLE_CONSOLE
-                value: "true"
-              - name: ENV
-                value: "tst"
-              ports:
-              - containerPort: 8080
-                protocol: TCP
-              resources: {}
+        spec:
+          containers:
+          - image: hasura/graphql-engine:${HASURA_VERSION}
+            imagePullPolicy: IfNotPresent
+            name: hasura
+            env:
+            - name: HASURA_GRAPHQL_DATABASE_URL
+              value: postgres://username:password@hostname:port/dbname
+            - name: HASURA_GRAPHQL_ENABLE_CONSOLE
+              value: "true"
+            - name: ENV
+              value: "tst"
+            ports:
+            - containerPort: 8080
+              protocol: TCP
+            resources: {}
 
 
-    - apiVersion: v1
-      kind: Service
-      metadata:
-        labels:
-          app: hasura
-        name: hasura
-        namespace: default
-      spec:
-        ports:
-        - protocol: TCP
-          port: 8080
-          targetPort: 8080
-        selector:
-          app: hasura
-        type: LoadBalancer
-  parameters:
-  - name: ENV
-    value: tst
-  - description: string version eg v1.0.0-beta.1
-    name: HASURA_VERSION
-    required: true
-    value: 7.0.1
-  - name: NAMESPACE
-    value: pipeline-app
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: hasura
+      name: hasura
+      namespace: default
+    spec:
+      ports:
+      - protocol: TCP
+        port: 8080
+        targetPort: 8080
+      selector:
+        app: hasura
+      type: LoadBalancer
+parameters:
+- name: ENV
+  value: tst
+- description: string version eg v1.0.0-beta.1
+  name: HASURA_VERSION
+  required: true
+  value: 7.0.1
+- name: NAMESPACE
+  value: pipeline-app
