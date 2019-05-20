@@ -63,6 +63,7 @@ pipeline {
                             sh '''#!/bin/bash
 
                                   oc project pipeline-app
+                                  echo ************ ${TEMPLATEPATH} **********
                                   oc -n pipeline-app delete all --selector=app=hasura-tst
 
                                   oc -n pipeline-app get templates && echo SUCCESS
