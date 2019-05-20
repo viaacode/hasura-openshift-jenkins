@@ -116,6 +116,20 @@ objects:
       storageClassName: vsphere-standard
     status: {}
 
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: hasura-${ENV}
+      name: postgres-${ENV}
+    spec:
+      ports:
+      - protocol: TCP
+        port: 5432
+        targetPort: 5432
+      selector:
+        app: postgres-${ENV}
+      type: LoadBalancer
 
 
 
