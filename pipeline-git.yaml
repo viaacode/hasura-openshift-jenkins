@@ -2,8 +2,9 @@ apiVersion: v1
 kind: BuildConfig
 metadata:
   labels:
-    name: openshiftexamples-cicdpipeline
-  name: openshiftexamples-cicdpipeline
+    name: hasura
+    app: hasura
+  name: hasura
 spec:
   source:
     type: Git
