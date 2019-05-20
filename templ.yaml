@@ -231,6 +231,6 @@ parameters:
 - description: string version eg v1.0.0-beta.1
   name: HASURA_VERSION
   required: true
-  value: 7.0.1
+  value: v1.0.0-beta.1
 - name: NAMESPACE
   value: pipeline-app
