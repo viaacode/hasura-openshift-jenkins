@@ -196,7 +196,7 @@ parameters:
   displayName: Database Service Name
   name: DATABASE_SERVICE_NAME
   required: true
-  value: postgresql
+  value: postgresql-tst
 - description: Username for PostgreSQL user that will be used for accessing the
     database.
   displayName: PostgreSQL Connection Username
@@ -231,6 +231,6 @@ parameters:
 - description: string version eg v1.0.0-beta.1
   name: HASURA_VERSION
   required: true
-  value: 7.0.1
+  value: v1.0.0-beta.1
 - name: NAMESPACE
   value: pipeline-app
