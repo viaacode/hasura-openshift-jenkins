@@ -138,8 +138,8 @@ objects:
                 secretKeyRef:
                   key: database-name
                   name: ${DATABASE_SERVICE_NAME}
-            image: 'centos/postgresql-96-centos7 '
-            imagePullPolicy: IfNotPresent
+            image: 'centos/postgresql-96-centos7'
+            imagePullPolicy: Always
             livenessProbe:
               exec:
                 command:
@@ -176,7 +176,7 @@ objects:
       - imageChangeParams:
           automatic: true
           containerNames:
-          - postgresql
+          - postgresql-${ENV}
           from:
             kind: ImageStreamTag
             name: postgresql:${POSTGRESQL_VERSION}
