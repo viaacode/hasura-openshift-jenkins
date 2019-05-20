@@ -2,7 +2,7 @@
 // This template originally from:
 // https://github.com/openshift/origin/blob/master/examples/jenkins/pipeline/nodejs-sample-pipeline.yaml
 //----------------------------------------------------------------------
-def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift_pipeline-jenkins/master/templ.yaml'
+def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/templ.yaml'
 def TEMPLATENAME = 'hasura'
 def TARGET_NS = 'pipeline-app'
 // NOTE, the "pipeline" directive/closure from the declarative pipeline syntax needs to include, or be nested outside,
@@ -63,7 +63,7 @@ pipeline {
                             sh '''#!/bin/bash
 
                                   oc project pipeline-app
-                                  oc -n pipeline-app delete all --selector=component=elasticsearch-qas
+                                  oc -n pipeline-app delete all --selector=app=hasura-tst
 
                                   oc -n pipeline-app get templates && echo SUCCESS
                                '''

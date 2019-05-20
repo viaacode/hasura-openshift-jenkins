@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Template
 metadata:
   creationTimestamp: null
-  name: demoapp-hasura-graphql-tst
+  name: hasura-graphql
 objects:
 - apiVersion: v1
   kind: Template
   metadata:
     annotations:
     creationTimestamp: null
-    name: asset-api
+    name: hasura
   objects:
     - apiVersion: apps/v1
       kind: Deployment
@@ -39,6 +39,8 @@ objects:
                 value: postgres://username:password@hostname:port/dbname
               - name: HASURA_GRAPHQL_ENABLE_CONSOLE
                 value: "true"
+              - name: ENV
+                value: "tst"
               ports:
               - containerPort: 8080
                 protocol: TCP
