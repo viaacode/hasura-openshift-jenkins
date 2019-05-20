@@ -72,7 +72,7 @@ objects:
           containers:
             - name: postgres
               image: docker.io/postgres@sha256:97fcdcff5106e995661864bebf1fd6881553471b88e2afd6f98fbcb775bf66b7
-              imagePullPolicy: "IfNotPresent"
+              imagePullPolicy: "Always"
               ports:
                 - containerPort: 5432
               envFrom:
