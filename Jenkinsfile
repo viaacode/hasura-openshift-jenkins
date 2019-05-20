@@ -58,7 +58,7 @@ pipeline {
                         openshift.withProject("pipeline-app") {
                             // create a new application from the TEMPLATEPATH
                            // openshift.newApp(TEMPLATEPATH)
-                           sh "oc -n pipeline-app apply -f templ.yaml"
+                           sh "oc -n pipeline-app apply -f hasura-tmpl.yaml"
                            echo "processing WARNING need root container for build"
                             sh '''#!/bin/bash
 
