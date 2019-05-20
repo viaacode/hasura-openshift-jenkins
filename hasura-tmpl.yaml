@@ -69,7 +69,7 @@ objects:
             app: postgres
         spec:
           initContainers:
-              - name: init-solr-data
+              - name: init-data
                 image: busybox
                 command: ['sh', '-c', 'chmod 755  -R /var/lib/pgsql/data && chown -R 26:26 /var/lib/pgsql/data/']
                 volumeMounts:
