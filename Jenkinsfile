@@ -98,9 +98,9 @@ pipeline {
                         openshift.withProject("pipeline-app") {
                              echo "Rolling out  build from template"
                              sh '''#/bin/bash
-                             oc -n pipeline-app process hasura-graphql -l app=hasura-tst,ENV=tst | oc apply -f -
-                             echo Rolled out the QAS cluster'''
-                        
+                             oc -n pipeline-app process hasura -l app=hasura-tst,ENV=tst | oc apply -f -
+                             echo Rolled out the Template '''
+
                         }
                     }
                 } // script
