@@ -100,9 +100,7 @@ pipeline {
                              sh '''#/bin/bash
                              oc -n pipeline-app process hasura -l app=hasura-tst ENV=tst | oc apply -f -
                              echo Rolled out the QAS cluster
-                             '''
-
-                             '''
+                        
                         }
                     }
                 } // script
