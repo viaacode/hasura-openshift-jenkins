@@ -102,8 +102,7 @@ objects:
       annotations:
         volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/vsphere-volume
       creationTimestamp: null
-      finalizers:
-      - kubernetes.io/pvc-protection
+
       labels:
         ENV: tst
         app: hasura-${ENV}
