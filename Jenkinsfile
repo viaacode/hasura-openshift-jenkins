@@ -2,7 +2,7 @@
 // This template originally from:
 // https://github.com/openshift/origin/blob/master/examples/jenkins/pipeline/nodejs-sample-pipeline.yaml
 //----------------------------------------------------------------------
-def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/templ.yaml'
+def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
 def TEMPLATENAME = 'hasura'
 def TARGET_NS = 'pipeline-app'
 // NOTE, the "pipeline" directive/closure from the declarative pipeline syntax needs to include, or be nested outside,
