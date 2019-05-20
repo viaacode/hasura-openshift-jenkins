@@ -68,6 +68,14 @@ objects:
           labels:
             app: postgres
         spec:
+          initContainers:
+              - name: init-solr-data
+                image: busybox
+                command: ['sh', '-c', 'chmod 755  -R /var/lib/pgsql/data && chown -R 26:26 /var/lib/pgsql/data/']
+                volumeMounts:
+                  - name: postgresdb-${ENV}
+                    mountPath: /var/lib/postgresql/data
+
           containers:
             - name: postgres
               image: postgres:10.4
@@ -79,9 +87,9 @@ objects:
                     name: postgres-config
               volumeMounts:
                 - mountPath: /var/lib/postgresql/data
-                  name: postgredbb-${ENV}
+                  name: postgresdb-${ENV}
           volumes:
-            - name: postgredb-${ENV}
+            - name: postgresdb-${ENV}
               persistentVolumeClaim:
                 claimName: postgres-${ENV}-pv-claim
   - apiVersion: v1
