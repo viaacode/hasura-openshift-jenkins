@@ -68,17 +68,10 @@ objects:
           labels:
             app: postgres-${ENV}
         spec:
-          initContainers:
-              - name: init-data
-                image: postgres:10.4
-                command: ['sh', '-c', 'chmod 755  -R /var/lib/pgsql/data && chown -R 26:26 /var/lib/pgsql/data/']
-                volumeMounts:
-                  - name: postgresdb-${ENV}
-                    mountPath: /var/lib/postgresql/data
 
           containers:
             - name: postgres
-              image: postgres:10.4
+              image: docker.io/postgres@sha256:97fcdcff5106e995661864bebf1fd6881553471b88e2afd6f98fbcb775bf66b7
               imagePullPolicy: "IfNotPresent"
               ports:
                 - containerPort: 5432
