@@ -117,6 +117,9 @@ objects:
           labels:
             name: ${DATABASE_SERVICE_NAME}
         spec:
+
+
+
           containers:
           - capabilities: {}
             env:
@@ -135,7 +138,7 @@ objects:
                 secretKeyRef:
                   key: database-name
                   name: ${DATABASE_SERVICE_NAME}
-            image: ' '
+            image: 'centos/postgresql-96-centos7 '
             imagePullPolicy: IfNotPresent
             livenessProbe:
               exec:
