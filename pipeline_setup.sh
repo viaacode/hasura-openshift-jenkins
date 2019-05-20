@@ -5,7 +5,7 @@ oc new-project pipeline-app --display-name="Pipeline Example - Build"
 
 # Switch to the cicd and create the pipeline build from a template
 oc project ci-cd
-oc create -f ./pipeline-git.yaml # note: this will pull from github off the master branch
+oc apply -f ./pipeline-git.yaml # note: this will pull from github off the master branch
 ## setup pipeline
 #oc apply -f pipeline.yaml 
 # Give this project an edit role on other related projects

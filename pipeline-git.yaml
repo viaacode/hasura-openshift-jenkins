@@ -9,7 +9,8 @@ spec:
   source:
     type: Git
     git:
-      uri: https://github.com/viaacode/hasura-openshift_pipeline-jenkins.git
+      uri: https://github.com/viaacode/hasura-openshift-jenkins.git
+
   strategy:
     type: JenkinsPipeline
     jenkinsPipelineStrategy:
