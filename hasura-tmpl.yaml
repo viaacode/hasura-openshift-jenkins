@@ -98,7 +98,7 @@ objects:
           volumes:
             - name: postgresdb-${ENV}
               persistentVolumeClaim:
-                claimName: hahsura-postgres-${ENV}-pvc
+                claimName: hasura-postgres-${ENV}-pvc
   - apiVersion: v1
     kind: ConfigMap
     metadata:
