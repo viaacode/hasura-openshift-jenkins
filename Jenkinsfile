@@ -44,7 +44,7 @@ pipeline {
                             }
                             sh '''#!/bin/bash
                             oc -n pipeline-app delete template hasura || echo "template was not there yet"
-		            oc delete all --selector=app=hasura-tst && sleep 5
+		            oc delete all --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
                             '''
                         }
                     }
@@ -80,7 +80,7 @@ pipeline {
                         openshift.withProject("pipeline-app") {
                              echo "No builds needed"
                              sh '''#!/bin/bash
-                             oc project pipeline-app
+                             echo postgresql settings are auto generated
 
                              '''
                         }
