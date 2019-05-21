@@ -120,7 +120,18 @@ pipeline {
                         }
                     }
                 } // script
-		    
+		 input message: "cleanup tst env? app: hasura-qas. Approve?", id: "approval"
+                    script {
+                    openshift.withCluster() {
+                        openshift.withProject("pipeline-app") {
+                             echo "Deleting tst env"
+                             sh '''#/bin/bash
+                             oc delete  all --selector=ENV=tst,app=hasura
+			     '''
+
+                        }
+                    }
+                } // script		
 		    
             } // steps
         } // stage
