@@ -73,7 +73,7 @@ objects:
           containers:
             - name: postgres
               image: docker.io/postgres@sha256:97fcdcff5106e995661864bebf1fd6881553471b88e2afd6f98fbcb775bf66b7
-              imagePullPolicy: "Always"
+              imagePullPolicy: "IfNotPresent"
               ports:
                 - containerPort: 5432
               envFrom:
@@ -91,7 +91,7 @@ objects:
     metadata:
       name: postgres-${ENV}cnf
       labels:
-        app: postgres-{ENV}
+        app: postgres-${ENV}
     data:
       POSTGRES_DB: ${POSTGRESQL_DATABASE}
       POSTGRES_USER: ${POSTGRESQL_USER}
