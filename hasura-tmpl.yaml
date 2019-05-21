@@ -38,8 +38,14 @@ objects:
             ports:
             - containerPort: 8080
               protocol: TCP
-            resources: {}
-
+      
+            resources:
+              limits:
+                cpu: 900m
+                memory: ${MEMORY_LIMIT}
+              requests:
+                cpu: 100m
+                memory: 512Mi     
 
   - apiVersion: v1
     kind: Service
@@ -82,6 +88,13 @@ objects:
               volumeMounts:
                 - mountPath: /var/lib/postgresql/data
                   name: postgresdb-${ENV}
+              resources:
+                    limits:
+                      cpu: 900m
+                      memory: ${MEMORY_LIMIT}
+                    requests:
+                      cpu: 100m
+                      memory: 512Mi                     
           volumes:
             - name: postgresdb-${ENV}
               persistentVolumeClaim:
@@ -128,13 +141,7 @@ objects:
       - protocol: TCP
         port: 5432
         targetPort: 5432
-      resources:
-        limits:
-          cpu: 900m
-          memory: ${MEMORY_LIMIT}
-        requests:
-          cpu: 100m
-          memory: 128Mi        
+   
       selector:
         app: postgres-${ENV}
       type: LoadBalancer
