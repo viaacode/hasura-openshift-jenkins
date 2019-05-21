@@ -195,7 +195,7 @@ parameters:
 
 - description: rand
   displayName: rand
-  from: pv[A-Z0-9]{9}
+  from: pv[a-z0-9]{9}
   generate: expression
   name: RAND
   required: true
