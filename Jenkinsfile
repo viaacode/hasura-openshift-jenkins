@@ -68,7 +68,7 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
                             // create a new application from the TEMPLATEPATH
-                           openshift.newApp(TEMPLATEPATH)
+                          // openshift.newApp(TEMPLATEPATH)
                            sh "oc -n pipeline-app apply -f hasura-tmpl.yaml"
                            echo "processing  ${TEMPLATEPATH} "
                             sh '''#!/bin/bash
