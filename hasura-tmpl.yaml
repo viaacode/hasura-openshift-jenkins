@@ -193,8 +193,8 @@ parameters:
 - name: NAMESPACE
   value: pipeline-app
 
-- description: tand
-  displayName: PostgreSQL Connection Username
+- description: rand
+  displayName: rand
   from: [A-Z0-9]{9}
   generate: expression
   name: RAND
