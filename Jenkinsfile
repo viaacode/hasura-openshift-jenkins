@@ -108,13 +108,22 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
-                             echo "Rolling out  build from template"
+                             echo "Rolling outfrom template"
                              sh '''#/bin/bash
                              oc -n pipeline-app process --param ENV=qas hasura -l app=hasura,ENV=qas | oc apply -f -
                              echo Rolled out the QAS app
 			      oc -n pipeline-app process --param ENV=prd hasura -l app=hasura,ENV=qas | oc apply -f -
                              echo Rolled out the PRD app
 			     echo *** please edit the ENV of the hasura deployment to connect to the db ***
+			    '''
+				echo "setting DB generated stuff in env for hasura pod"
+			    sh '''#!/bin/bash 
+			    
+			     DB_NAME=`oc get configmap postgres-qascnf -o json | jq .data.POSTGRES_DB`
+			     DB_USER=`oc get configmap postgres-qascnf -o json | jq .data.POSTGRES_USER`
+			     DB_PASSWORD=`oc get configmap postgres-qascnf -o json | jq .data.POSTGRES_PASSWORD`
+			
+			     oc set env deployment/hasura-qas HASURA_GRAPHQL_DATABASE_URL=postgres://$DB_USER$DN_PASSWORD@postgresql-qas:5432/sampledb
 			     '''
 
                         }
