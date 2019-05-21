@@ -38,7 +38,7 @@ pipeline {
                         openshift.withProject("pipeline-app") {
                             // delete everything with this template label
                            // openshift.selector("all", [ deployment  : TEMPLATENAME ]).delete()
-				openshift.selector("all", [ pvc  : postgres-qas-pv-claim ]).delete()
+				openshift.selector("all", [ pvc  : "postgres-qas-pv-claim" ]).delete()
                             // delete any secrets with this template label
                             if (openshift.selector("secrets", TEMPLATENAME).exists()) {
                                 openshift.selector("secrets", TEMPLATENAME).delete()
