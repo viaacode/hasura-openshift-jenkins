@@ -77,7 +77,7 @@ objects:
                 - containerPort: 5432
               envFrom:
                 - configMapRef:
-                    name: postgres-config
+                    name: postgres-${ENV}cnf
               volumeMounts:
                 - mountPath: /var/lib/postgresql/data
                   name: postgresdb-${ENV}
@@ -88,7 +88,7 @@ objects:
   - apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: postgres-config
+      name: postgres-${ENV}cnf
       labels:
         app: postgres-{ENV}
     data:
@@ -104,7 +104,7 @@ objects:
       creationTimestamp: null
 
       labels:
-        ENV: tst
+        ENV: ${ENV}
         app: hasura-${ENV}
       name: postgres-${ENV}-pv-claim
     spec:
@@ -112,7 +112,7 @@ objects:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Gi
+          storage: ${VOLUME_CAPACITY}
       storageClassName: vsphere-standard
     status: {}
 
@@ -127,6 +127,13 @@ objects:
       - protocol: TCP
         port: 5432
         targetPort: 5432
+      resources:
+        limits:
+          cpu: 900m
+          memory: ${MEMORY_LIMIT}
+        requests:
+          cpu: 100m
+          memory: 128Mi        
       selector:
         app: postgres-${ENV}
       type: LoadBalancer
@@ -139,10 +146,7 @@ parameters:
   name: MEMORY_LIMIT
   required: true
   value: 512Mi
-- description: The OpenShift Namespace where the ImageStream resides.
-  displayName: Namespace
-  name: NAMESPACE
-  value: openshift
+
 - description: The name of the OpenShift Service exposed for the database.
   displayName: Database Service Name
   name: DATABASE_SERVICE_NAME
@@ -171,11 +175,6 @@ parameters:
   name: VOLUME_CAPACITY
   required: true
   value: 1Gi
-- description: Version of PostgreSQL image to be used (9.4, 9.5, 9.6 or latest).
-  displayName: Version of PostgreSQL Image
-  name: POSTGRESQL_VERSION
-  required: true
-  value: "9.6"
 
 - name: ENV
   value: tst
