@@ -45,7 +45,7 @@ pipeline {
 				oc -n pipeline-app delete all  --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
                                	
 			       	'''
-			       openshift.selector("secrets", TEMPLATENAME).delete()
+			       //openshift.selector("secrets", TEMPLATENAME).delete()
                             }
                             sh '''#!/bin/bash
 			    echo "clear template"
