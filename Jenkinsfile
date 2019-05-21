@@ -111,7 +111,7 @@ pipeline {
                              sh '''#/bin/bash
                              oc -n pipeline-app process --param ENV=qas hasura -l app=hasura,ENV=qas | oc apply -f -
                              echo Rolled out the QAS app
-			      oc -n pipeline-app process --param ENV=prd hasura -l app=hasura,ENV=qas | oc apply -f -
+			     # oc -n pipeline-app process --param ENV=prd hasura -l app=hasura-qas,ENV=prd | oc apply -f -
                              echo Rolled out the PRD app
 			     echo *** please edit the ENV of the hasura deployment to connect to the db ***
 			    '''
