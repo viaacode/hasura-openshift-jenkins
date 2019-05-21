@@ -38,7 +38,7 @@ pipeline {
                         openshift.withProject("pipeline-app") {
                             // delete everything with this template label
                            // openshift.selector("all", [ deployment  : TEMPLATENAME ]).delete()
-				openshift.selector("all", [ pvc  : "postgres-qas-pv-claim" ]).delete()
+			//	openshift.selector("all", [ pvc  : "postgres-qas-pv-claim" ]).delete()
                             // delete any secrets with this template label
                             if (openshift.selector("secrets", TEMPLATENAME).exists()) {
                                 openshift.selector("secrets", TEMPLATENAME).delete()
@@ -47,7 +47,9 @@ pipeline {
                             oc -n pipeline-app delete template hasura || echo "template was not there yet"
 		            oc -n pipeline-app delete all --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
 			    oc -n pipeline-app delete all --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
-			   # oc -n pipeline-app delete all --selector=app=hasura-tst
+                            oc -n pipeline-app delete pvc --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
+
+			    # oc -n pipeline-app delete all --selector=app=hasura-tst
                             '''
 				
                         }
