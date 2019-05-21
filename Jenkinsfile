@@ -44,8 +44,12 @@ pipeline {
                             }
                             sh '''#!/bin/bash
                             oc -n pipeline-app delete template hasura || echo "template was not there yet"
-		            oc delete all --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
+		            oc -n pipeline-app delete all --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
+			    oc -n pipeline-app delete all --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
+			   # oc -n pipeline-app delete all --selector=app=hasura-tst
                             '''
+				echo cleanup finishedwaiting 10 seconds
+				sleep 10
                         }
                     }
                 } // script
@@ -59,12 +63,12 @@ pipeline {
                             // create a new application from the TEMPLATEPATH
                            // openshift.newApp(TEMPLATEPATH)
                            sh "oc -n pipeline-app apply -f hasura-tmpl.yaml"
-                           echo "processing WARNING need root container for build"
+                           echo "processing  ${TEMPLATEPATH} "
                             sh '''#!/bin/bash
 
                                   oc project pipeline-app
                                   echo ************ ${TEMPLATEPATH} **********
-                                  oc -n pipeline-app delete all --selector=app=hasura-tst
+                                  
 
                                   oc -n pipeline-app get templates && echo SUCCESS
                                '''
@@ -79,22 +83,15 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
                              echo "No builds needed"
-                             sh '''#!/bin/bash
-                             echo postgresql settings are auto generated for QAS, delete them for redeploy
-			     oc delete -n pipeline-app configmap postgres-qascnf
-			     echo deleting disk for qas 
-			     PV-QAS=`oc get pv | grep postgres-qas-pv-claim | awk '{print $3}'`
-			     oc delete pvc postgres-qas-pv-claim  || oc delete pv $PVC-QAS
-
-                             '''
+                    
                         }
                     }
-                } // script
-            } // steps
-        } // stage
+                } 
+            } 
+        } 
 
 
-               stage('Install') {
+       stage('Install and configue') {
             steps {
 
                 script {
@@ -108,7 +105,6 @@ pipeline {
                         }
                     }
                 } // script
-                input message: "Test app: hasura-qas. Approve?", id: "approval"
                 script {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
