@@ -98,7 +98,7 @@ objects:
           volumes:
             - name: postgresdb-${ENV}
               persistentVolumeClaim:
-                claimName: hasura-postgres-${ENV}-pvc
+                claimName: hasura-postgres-${ENV}-${RAND}
   - apiVersion: v1
     kind: ConfigMap
     metadata:
@@ -120,7 +120,7 @@ objects:
       labels:
         ENV: ${ENV}
         app: hasura-${ENV}
-      name: hasura-postgres-${ENV}-pvc
+      name: hasura-postgres-${ENV}-${RAND}
     spec:
       accessModes:
       - ReadWriteOnce
@@ -192,3 +192,11 @@ parameters:
   value: v1.0.0-beta.1
 - name: NAMESPACE
   value: pipeline-app
+
+- description: tand
+  displayName: PostgreSQL Connection Username
+  from: [A-Z0-9]{9}
+  generate: expression
+  name: RAND
+  required: true
+
