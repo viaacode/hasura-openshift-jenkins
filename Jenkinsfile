@@ -42,7 +42,7 @@ pipeline {
                             // delete any secrets with this template label
                             if (openshift.selector("configmap", "postgres-qascnf").exists()) {
 		           	sh '''#!/bin/bash
-				oc -n pipeline-app delete all --wait=true --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
+				oc -n pipeline-app delete all  --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
                                	
 			       	'''
 			       openshift.selector("secrets", TEMPLATENAME).delete()
