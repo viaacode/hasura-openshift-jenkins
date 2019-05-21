@@ -99,13 +99,29 @@ pipeline {
                              echo "Rolling out  build from template"
                              sh '''#/bin/bash
                              oc -n pipeline-app process hasura -l app=hasura-tst,ENV=tst | oc apply -f -
-                             echo Rolled out the Template '''
+                             echo Rolled out the Template tst'''
 
                         }
                     }
                 } // script
-            //    input message: "Test deployment: es-qas. Approve?", id: "approval"
+                input message: "Test app: hasura-qas. Approve?", id: "approval"
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject("pipeline-app") {
+                             echo "Rolling out  build from template"
+                             sh '''#/bin/bash
+                             oc -n pipeline-app process hasura -l app=hasura-qas,ENV=qas | oc apply -f -
+                             echo Rolled out the QAS app
+			     oc -n pipeline-app process hasura -l app=hasura-prd,ENV=prd | oc apply -f -
+                             echo Rolled out the PRD app
+			     echo *** please edit the ENV of the hasura deployment to connect to the db ***
+			     '''
 
+                        }
+                    }
+                } // script
+		    
+		    
             } // steps
         } // stage
     } // stages
