@@ -3,66 +3,8 @@ kind: Template
 metadata:
   annotations:
   creationTimestamp: null
-  name: hasura
+  name: postgresql
 objects:
-  - apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      labels:
-        app: hasura-${ENV}
-        hasuraService: custom
-      name: hasura-${ENV}
-      namespace: default
-    spec:
-      replicas: 1
-      selector:
-        matchLabels:
-          app: hasura-${ENV}
-      template:
-        metadata:
-          creationTimestamp: null
-          labels:
-            app: hasura-${ENV}
-        spec:
-          containers:
-          - image: hasura/graphql-engine:${HASURA_VERSION}
-            imagePullPolicy: IfNotPresent
-            name: hasura-${ENV}
-            env:
-            - name: HASURA_GRAPHQL_DATABASE_URL
-              value: postgres://username:password@hostname:port/dbname
-            - name: HASURA_GRAPHQL_ENABLE_CONSOLE
-              value: "true"
-            - name: ENV
-              value: "qas"
-            ports:
-            - containerPort: 8080
-              protocol: TCP
-      
-            resources:
-              limits:
-                cpu: 900m
-                memory: ${MEMORY_LIMIT}
-              requests:
-                cpu: 100m
-                memory: 512Mi     
-
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      labels:
-        app: hasura-${ENV}
-      name: hasura-${ENV}
-      namespace: default
-    spec:
-      ports:
-      - protocol: TCP
-        port: 8080
-        name: http
-        targetPort: 8080
-      selector:
-        app: hasura-${ENV}
-      type: LoadBalancer
 
   - apiVersion: extensions/v1beta1
     kind: Deployment
@@ -94,11 +36,11 @@ objects:
                       memory: ${MEMORY_LIMIT}
                     requests:
                       cpu: 100m
-                      memory: 512Mi                     
+                      memory: 512Mi
           volumes:
             - name: postgresdb-${ENV}
               persistentVolumeClaim:
-                claimName: hahsura-postgres-${ENV}-pvc
+                claimName: postgres-${ENV}-pv-claim
   - apiVersion: v1
     kind: ConfigMap
     metadata:
@@ -120,7 +62,7 @@ objects:
       labels:
         ENV: ${ENV}
         app: hasura-${ENV}
-      name: hasura-postgres-${ENV}-pvc
+      name: postgres-${ENV}-pv-claim
     spec:
       accessModes:
       - ReadWriteOnce
@@ -134,14 +76,14 @@ objects:
     kind: Service
     metadata:
       labels:
-        app: hasura-${ENV}
-      name: postgres-${ENV}
+        app: postgres-${ENV}
+      name: ${DATABASE_SERVICE_NAME}
     spec:
       ports:
       - protocol: TCP
         port: 5432
         targetPort: 5432
-   
+
       selector:
         app: postgres-${ENV}
       type: LoadBalancer
@@ -182,13 +124,7 @@ parameters:
   displayName: Volume Capacity
   name: VOLUME_CAPACITY
   required: true
-  value: 512Mi
+  value: 1Gi
 
 - name: ENV
   value: tst
-- description: string version eg v1.0.0-beta.1
-  name: HASURA_VERSION
-  required: true
-  value: v1.0.0-beta.1
-- name: NAMESPACE
-  value: pipeline-app
