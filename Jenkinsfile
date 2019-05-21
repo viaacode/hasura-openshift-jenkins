@@ -119,9 +119,9 @@ pipeline {
 				echo "setting DB generated stuff in env for hasura pod"
 			    sh '''#!/bin/bash 
 			    
-			     DB_NAME=`oc get configmap postgres-qascnf -o json | jq .data.POSTGRES_DB`
-			     DB_USER=`oc get configmap postgres-qascnf -o json | jq .data.POSTGRES_USER`
-			     DB_PASSWORD=`oc get configmap postgres-qascnf -o json | jq .data.POSTGRES_PASSWORD`
+			     DB_NAME=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_DB| head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
+			     DB_USER=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_USER | head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
+			     DB_PASSWORD=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_PASSWORD | head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
 			
 			     oc set env deployment/hasura-qas HASURA_GRAPHQL_DATABASE_URL=postgres://$DB_USER$DN_PASSWORD@postgresql-qas:5432/sampledb
 			     '''
