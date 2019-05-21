@@ -37,7 +37,7 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
                             // delete everything with this template label
-                            openshift.selector("all", [ deployment  : TEMPLATENAME ]).delete()
+                           // openshift.selector("all", [ deployment  : TEMPLATENAME ]).delete()
                             // delete any secrets with this template label
                             if (openshift.selector("secrets", TEMPLATENAME).exists()) {
                                 openshift.selector("secrets", TEMPLATENAME).delete()
@@ -48,8 +48,7 @@ pipeline {
 			    oc -n pipeline-app delete all --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
 			   # oc -n pipeline-app delete all --selector=app=hasura-tst
                             '''
-				echo cleanup finishedwaiting 10 seconds
-				sleep 10
+				
                         }
                     }
                 } // script
