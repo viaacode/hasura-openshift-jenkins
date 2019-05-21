@@ -81,7 +81,7 @@ pipeline {
                              echo "No builds needed"
                              sh '''#!/bin/bash
                              echo postgresql settings are auto generated for QAS, delete them for redeploy
-			     oc delete -n pipeline-app postgres-qascnf
+			     oc delete -n pipeline-app configmap postgres-qascnf
 			     echo deleting disk for qas 
 			     PV-QAS=`oc get pv | grep postgres-qas-pv-claim | awk '{print $3}'`
 			     oc delete pvc postgres-qas-pv-claim  || oc delete pv $PVC-QAS
