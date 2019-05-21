@@ -51,9 +51,8 @@ pipeline {
 			    echo "clear template"
                             oc -n pipeline-app delete template hasura || echo "template was not there yet"
 			   # oc -n pipeline-app delete all --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
-                            #oc -n pipeline-app delete pvc --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
+                            oc -n pipeline-app delete pvc --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
 
-			    # oc -n pipeline-app delete all --selector=app=hasura-tst
                             '''
 				
                         }
