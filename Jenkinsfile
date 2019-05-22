@@ -85,12 +85,9 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
 				
-			 def template
-			    if (!templateExists) {
+			
 				template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/postgresql-persistent.yaml').object()
-			    } else {
-				template = templateSelector.object()
-			    }				
+			  			
 
 				
                             // create a new application from the TEMPLATEPATH
