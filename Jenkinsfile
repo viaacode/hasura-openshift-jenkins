@@ -10,9 +10,6 @@ def templateSelector = openshift.selector( "template", "postgresql-persistent")
     
 def templateExists = templateSelector.exists()
 
-def templateGeneratedSelector = openshift.selector(["dc/mongodb", "service/mongodb", "secret/mongodb"])
-
-def objectsGeneratedFromTemplate = templateGeneratedSelector.exists()
 
 
 // NOTE, the "pipeline" directive/closure from the declarative pipeline syntax needs to include, or be nested outside,
