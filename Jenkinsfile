@@ -4,7 +4,17 @@
 //----------------------------------------------------------------------
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
 def TEMPLATENAME = 'hasura'
+def DB_TEMPL = 'postgresql-persistent'
 def TARGET_NS = 'pipeline-app'
+def templateSelector = openshift.selector( "template", postgresql-persistent")
+    
+def templateExists = templateSelector.exists()
+
+def templateGeneratedSelector = openshift.selector(["dc/mongodb", "service/mongodb", "secret/mongodb"])
+
+def objectsGeneratedFromTemplate = templateGeneratedSelector.exists()
+
+
 // NOTE, the "pipeline" directive/closure from the declarative pipeline syntax needs to include, or be nested outside,
 // and "openshift" directive/closure from the OpenShift Client Plugin for Jenkins.  Otherwise, the declarative pipeline engine
 // will not be fully engaged.
@@ -47,10 +57,20 @@ pipeline {
 			       	'''
 			       //openshift.selector("secrets", TEMPLATENAME).delete()
                             }
+			    if (openshift.selector("secret", "db-hasura-prd").exists()) {
+				    echo "prd db is configured not messing with it"
+		           	sh '''#!/bin/bash
+				oc -n pipeline-app delete all  --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
+                               	
+			       	'''
+			       //openshift.selector("secrets", TEMPLATENAME).delete()
+                            }	
                             sh '''#!/bin/bash
 			    echo "clear template"
+			     oc -n pipeline-app delete template postgresql-persistent || echo "template was not there yet"
                             oc -n pipeline-app delete template hasura || echo "template was not there yet"
-			    oc delete  all --selector=ENV=tst,app=hasura || echho "nothing deleted"
+			    oc delete  all --selector=ENV=tst,app=hasura || echo "nothing deleted"
+			    oc delete pvc  oc -n pipeline-app delete template || echo "nothing deleted"
 
 			   # oc -n pipeline-app delete all --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
                             oc -n pipeline-app delete pvc --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
@@ -67,16 +87,24 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
+				
+			 def template
+			    if (!templateExists) {
+				template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/postgresql-persistent.yaml').object()
+			    } else {
+				template = templateSelector.object()
+			    }				
+
+				
                             // create a new application from the TEMPLATEPATH
                           // openshift.newApp(TEMPLATEPATH)
                            sh "oc -n pipeline-app apply -f hasura-tmpl.yaml"
-                           echo "processing  ${TEMPLATEPATH} "
+			  // sh "oc apply -f postgresql-persistent.yaml"
+			   sh '''#!/bin/bash
+			   oc process -l app=hasura,ENV=prd  -p DATABASE_SERVICE_NAME=db-hasura-prd -p VOLUME_CAPACITY=254Mi  postgresql-persistent | oc apply -f - 
+			   '''
                             sh '''#!/bin/bash
-
                                   oc project pipeline-app
-                                  echo ************ ${TEMPLATEPATH} **********
-                                  
-
                                   oc -n pipeline-app get templates && echo SUCCESS
                                '''
                         }
