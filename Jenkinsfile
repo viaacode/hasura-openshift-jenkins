@@ -6,9 +6,9 @@ def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-
 def TEMPLATENAME = 'hasura'
 def DB_TEMPL = 'postgresql-persistent'
 def TARGET_NS = 'pipeline-app'
-def templateSelector = openshift.selector( "template", "postgresql-persistent")
+// def templateSelector = openshift.selector( "template", "postgresql-persistent")
     
-def templateExists = templateSelector.exists()
+// def templateExists = templateSelector.exists()
 
 
 
