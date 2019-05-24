@@ -188,11 +188,12 @@ pipeline {
             } // steps
         } // stage
     } // stages
- post {
+    post {
         always {
-	    /* Use slackNotifier.groovy from shared library and provide current build result as parameter */   
-            slackNotifier(currentBuild.currentResult)
-            cleanWs()
+            script {
+               cleanWs()
+               slackNotifier(currentBuild.currentResult)
+            }
         }
     }
 
