@@ -182,7 +182,6 @@ pipeline {
     post {
         always {
             script {
-               cleanWs()
                slackNotifier(currentBuild.currentResult)
             }
         }
