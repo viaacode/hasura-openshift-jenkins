@@ -207,7 +207,7 @@ pipeline {
     } // stages
 
     notifyBuild('SUCCESSFUL')
-} // try end
+
 catch (exc) {
    notifyBuild('ERROR')
 }
