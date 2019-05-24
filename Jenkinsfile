@@ -1,5 +1,5 @@
 /* import shared library */
-@Library('jenkins-shared-libs')
+//@Library('jenkins-shared-libs')
 
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
 def TEMPLATENAME = 'hasura'
@@ -19,7 +19,16 @@ def TARGET_NS = 'pipeline-app'
 pipeline {
     agent {
       node {
+    try {
+        notifySlack()
 
+        // Existing build steps.
+    } catch (e) {
+        currentBuild.result = 'FAILURE'
+        throw e
+    } finally {
+        notifySlack(currentBuild.result)
+    }
         // spin up a pod to run this build on
         label 'master'
       }
