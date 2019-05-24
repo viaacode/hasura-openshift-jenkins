@@ -33,6 +33,7 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("pipeline-app") {
                             echo "Using project: ${openshift.project()}"
+				sh'''oc --version '''
                         }
                     }
                 }
