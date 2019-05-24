@@ -1,5 +1,5 @@
 /* import shared library */
-@Library('jenkins-shared-library')_
+@Library('jenkins-shared-libs')_
 
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
 def TEMPLATENAME = 'hasura'
