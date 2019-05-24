@@ -1,7 +1,6 @@
-//----------------------------------------------------------------------
-// This template originally from:
-// https://github.com/openshift/origin/blob/master/examples/jenkins/pipeline/nodejs-sample-pipeline.yaml
-//----------------------------------------------------------------------
+/* import shared library */
+@Library('jenkins-shared-library')_
+
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
 def TEMPLATENAME = 'hasura'
 def DB_TEMPL = 'postgresql-persistent'
@@ -180,7 +179,13 @@ pipeline {
             } // steps
         } // stage
     } // stages
-
+ post {
+        always {
+	    /* Use slackNotifier.groovy from shared library and provide current build result as parameter */   
+            slackNotifier(currentBuild.currentResult)
+            cleanWs()
+        }
+    }
 
 	
 } // pipeline
