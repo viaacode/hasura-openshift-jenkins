@@ -208,9 +208,9 @@ pipeline {
 
     notifyBuild('SUCCESSFUL')
 
-catch (exc) {
-   notifyBuild('ERROR')
-}
+//catch (exc) {
+ //  notifyBuild('ERROR')
+//}
 	
 	
 } // pipeline
