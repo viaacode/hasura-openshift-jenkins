@@ -11,7 +11,7 @@ oc apply -f ./pipeline-git.yaml # note: this will pull from github off the maste
 #oc apply -f pipeline.yaml
 # Give this project an edit role on other related projects
 oc policy add-role-to-user edit system:serviceaccount:ci-cd:jenkins -n tmp
-
+oc adm policy add-scc-to-user anyuid -n tmp  -z default
 # Wait for Jenkins to start
 oc project ci-cd
 echo "Waiting for Jenkins pod to start.  You can safely exit this with Ctrl+C or just wait."

@@ -33,8 +33,9 @@ pipeline {
                         openshift.withProject("tmp") {
                             echo "Using project: ${openshift.project()}"
                             echo "We need anyuid for postgresql"
-			     sh '''#!/bin/bash 
-                               oc adm policy add-scc-to-user anyuid -n tmp  -z default
+			     sh '''#!/bin/bash
+                               echo this is setup by the bash script 
+                               #oc adm policy add-scc-to-user anyuid -n tmp  -z default
                             '''
                         }
                     }
