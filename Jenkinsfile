@@ -32,9 +32,9 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("tmp") {
                             echo "Using project: ${openshift.project()}"
-                            echo "We need anyuid for postgrsql"
+                            echo "We need anyuid for postgresql"
 			     sh '''#!/bin/bash 
-                               oc adm policy add-scc-to-user anyuid -n tmp  -z default"
+                               oc adm policy add-scc-to-user anyuid -n tmp  -z default
                             '''
                         }
                     }
