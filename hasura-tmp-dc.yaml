@@ -129,7 +129,7 @@ parameters:
   required: true
   value: v1.0.0-beta.2
 - name: NAMESPACE
-  value: pipeline-app
+  value: shared-components
 - name: PROJECT
   value: avo2
 - name: MEMORY_LIMIT

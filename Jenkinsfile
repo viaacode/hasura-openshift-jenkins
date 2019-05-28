@@ -4,7 +4,7 @@
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmp-dc.yaml'
 def TEMPLATENAME = 'hasura-template'
 def DB_TEMPL = 'postgresql-persistent'
-def TARGET_NS = 'tmp'
+def TARGET_NS = 'shared-components'
 def templateSelector = openshift.selector( "template", "hasura-template")
 
 
@@ -30,12 +30,12 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("tmp") {
+                        openshift.withProject("shared-components") {
                             echo "Using project: ${openshift.project()}"
                             echo "We need anyuid for postgresql"
 			                         sh '''#!/bin/bash
                                echo this is setup by the bash script
-                               #oc adm policy add-scc-to-user anyuid -n tmp  -z default
+                               #oc adm policy add-scc-to-user anyuid -n shared-components  -z default
                             '''
                         }
                     }
@@ -46,13 +46,13 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("tmp") {
+                        openshift.withProject("shared-components") {
                             if (openshift.selector("deploymentconfig", "db-avo2-events-qas").exists()) {
 			       sh '''#!/bin/bash
           				echo 'DB exists creating extention'
-          				PGPOD=`oc -n tmp  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
+          				PGPOD=`oc -n shared-components  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
                   echo "dbpod: $PGPOD"
-          				oc -n tmp exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
+          				oc -n shared-components exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
           				'''
                             } else {sh'''#!/bin/bash
                                       echo "deploying the database"
@@ -60,9 +60,9 @@ pipeline {
                                       echo waiting roll out
                                       sleep 45
 
-                                      PGPOD=`oc -n tmp  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
+                                      PGPOD=`oc -n shared-components  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
                                       echo "dbpod: $PGPOD"
-                              				oc -n tmp exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
+                              				oc -n shared-components exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
                                     '''
                               }
                         }
@@ -74,21 +74,21 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("tmp") {
+                        openshift.withProject("shared-components") {
 
 
 
                     			   sh "oc apply -f hasura-tmp-dc.yaml"
                     			   sh '''#!/bin/bash
-                             oc project tmp
-                    			   DB_NAME=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode`
-                             POSTGRESQL_USER=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode`
-                             POSTGRESQL_PASSWORD=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
+                             oc project shared-components
+                    			   DB_NAME=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode`
+                             POSTGRESQL_USER=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode`
+                             POSTGRESQL_PASSWORD=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
                     			   echo ${POSTGRESQL_USER}
 
                     			   oc process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc apply -f -
-                             oc -n tmp get deploymentconfig  && echo SUCCESS
-                             oc -n tmp env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME}
+                             oc -n shared-components get deploymentconfig  && echo SUCCESS
+                             oc -n shared-components env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME}
                                '''
                                             }
                                         }
@@ -99,7 +99,7 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("tmp") {
+                        openshift.withProject("shared-components") {
                              sh'''#!/bin/bash
                              echo "basic port test are in deployments "
 
