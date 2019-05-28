@@ -50,7 +50,7 @@ pipeline {
                             if (openshift.selector("deploymentconfig", "db-avo2-events-qas").exists()) {
 			       sh '''#!/bin/bash
           				echo 'DB exists creating extention'
-          				export PGPOD=`oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}'`
+          				export PGPOD=`oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' | awk '{print $2}'`
                   echo "dbpod: ${PGPOD}"
           				oc exec -ti ${PGPOD} -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events "
           				'''
