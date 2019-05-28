@@ -33,7 +33,7 @@ pipeline {
                         openshift.withProject("tmp") {
                             echo "Using project: ${openshift.project()}"
                             echo "We need anyuid for postgresql"
-			     sh '''#!/bin/bash
+			                         sh '''#!/bin/bash
                                echo this is setup by the bash script
                                #oc adm policy add-scc-to-user anyuid -n tmp  -z default
                             '''
@@ -49,13 +49,14 @@ pipeline {
                         openshift.withProject("tmp") {
                             if (openshift.selector("deploymentconfig", "db-avo2-events-qas").exists()) {
 			       sh '''#!/bin/bash
-				echo 'DB exists creating extention'
-				PGPOD=$(oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}')
-        echo "dbpod: ${PGPOD}"
-				oc exec -ti ${PGPOD} -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events "
-				'''
+          				echo 'DB exists creating extention'
+          				export PGPOD=`oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}'`
+                  echo "dbpod: ${PGPOD}"
+          				oc exec -ti ${PGPOD} -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events "
+          				'''
                             } else {sh'''#!/bin/bash
-                                      oc process -l=APP=hazura-qas -pMEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
+                                      echo "deploying the database"
+                                    #  oc process -l=APP=hazura-qas -pMEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
                                     '''
                               }
                         }
