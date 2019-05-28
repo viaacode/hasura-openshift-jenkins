@@ -88,6 +88,7 @@ objects:
       metadata:
         labels:
           name: ${DATABASE_SERVICE_NAME}
+          env: ${ENV}
       spec:
         initContainers:
         - command:
@@ -210,3 +211,7 @@ parameters:
   name: POSTGRESQL_VERSION
   required: true
   value: "9.6"
+- description: env
+  value: qas
+  required: true
+  name: ENV

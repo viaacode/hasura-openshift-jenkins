@@ -5,8 +5,8 @@
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
 def TEMPLATENAME = 'hasura'
 def DB_TEMPL = 'postgresql-persistent'
-def TARGET_NS = 'pipeline-app'
-def templateSelector = openshift.selector( "template", "postgresql-persistent")
+def TARGET_NS = 'tmp'
+def templateSelector = openshift.selector( "template", "hasura-template")
     
 def templateExists = templateSelector.exists()
 
@@ -31,63 +31,46 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
+                        openshift.withProject("tmp") {
                             echo "Using project: ${openshift.project()}"
+                            echo "We need anyuid for postgrsql"
+			     sh '''#!/bin/bash 
+                               oc adm policy add-scc-to-user anyuid -n tmp  -z default"
+                            '''
                         }
                     }
                 }
             }
         }
-        stage('cleanup') {
+        stage('check DB') {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
-                            // delete everything with this template label
-                           // openshift.selector("all", [ deployment  : TEMPLATENAME ]).delete()
-			//	openshift.selector("all", [ pvc  : "postgres-qas-pv-claim" ]).delete()
-                            // delete any secrets with this template label
-                            if (openshift.selector("configmap", "postgres-qascnf").exists()) {
-		           	sh '''#!/bin/bash
-				oc -n pipeline-app delete all  --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
-                               	
-			       	'''
-			       //openshift.selector("secrets", TEMPLATENAME).delete()
-                            }
-			    if (openshift.selector("secret", "db-hasura-prd").exists()) {
-				    echo "prd db is configured not messing with it"
-		           	sh '''#!/bin/bash
-				oc -n pipeline-app delete all  --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
-                               	
-			       	'''
-			       //openshift.selector("secrets", TEMPLATENAME).delete()
-                            }	
-                            sh '''#!/bin/bash
-			    echo "clear template"
-			     oc -n pipeline-app delete template postgresql-persistent || echo "template was not there yet"
-                            oc -n pipeline-app delete template hasura || echo "template was not there yet"
-			    oc delete  all --selector=ENV=tst,app=hasura || echo "nothing deleted"
-			    oc delete pvc  oc -n pipeline-app delete template || echo "nothing deleted"
-
-			   # oc -n pipeline-app delete all --selector=ENV=qas,app=hasura || echo "qas env was deleted already"
-                            oc -n pipeline-app delete pvc --selector=ENV=tst,app=hasura || echo "tst env was deleted already"
-
-                            '''
-				
+                        openshift.withProject("tmp") {
+                            if (openshift.selector("deploymentconfig", "db-avo2-events-qas").exists()) {
+			       sh '''#!/bin/bash
+				echo 'DB exists creating extention'
+				PGPOD=$(oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}') 
+				oc exec -ti $PGPOD -- bash -c "psql -c 'CREATE extension pgcrypto;' events dbmaster" || echo extention exists
+				'''
+                            } else {sh'''#!/bin/bash
+                                      oc process -l=APP=hazura-qas -pMEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
+                                    '''  
+                              }	
                         }
                     }
                 } // script
             } // steps
         } // stage
-        stage('create') {
+        stage('Install hasura') {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
+                        openshift.withProject("tmp") {
 				
 			 def template
 			    if (!templateExists) {
-				template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/postgresql-persistent.yaml').object()
+				template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml').object()
 			    } else {
 				template = templateSelector.object()
 			    }				
@@ -95,26 +78,27 @@ pipeline {
 				
                             // create a new application from the TEMPLATEPATH
                           // openshift.newApp(TEMPLATEPATH)
-                           sh "oc -n pipeline-app apply -f hasura-tmpl.yaml"
+                           sh "oc -n tmp apply -f hasura-tmpl.yaml"
 			  // sh "oc apply -f postgresql-persistent.yaml"
 			   sh '''#!/bin/bash
-			   oc process -l app=hasura,ENV=prd  -p DATABASE_SERVICE_NAME=db-hasura-prd -p VOLUME_CAPACITY=254Mi  postgresql-persistent | oc apply -f - 
-			   '''
-                            sh '''#!/bin/bash
-                                  oc project pipeline-app
-                                  oc -n pipeline-app get templates && echo SUCCESS
+			   DB_NAME=$(oc get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode)
+                           POSTGRESQL_USER=$(oc get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode)
+                           POSTGRESQL_PASSWORD=$(oc get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode)
+			   echo ${HASURA_GRAPHQL_DATABASE_URL}
+			   oc process -l app=avo2-events,ENV=qas,HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME} -p MEMORY_LIMIT=128Mi  -f hasura-tmpl.yaml | oc apply -f - 
+                           oc -n tmp get deploymentconfig  && echo SUCCESS
                                '''
                         }
                     }
                 } // script
             } // steps
         } // stage
-        stage('build_config-qas_and_imagestreams') {
+        stage('test') {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
-                             echo "No builds needed"
+                        openshift.withProject("tmp") {
+                             echo "No Test yet"
                     
                         }
                     }
@@ -128,10 +112,10 @@ pipeline {
 
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
+                        openshift.withProject("tmp") {
                              echo "Rolling out  build from template"
                              sh '''#/bin/bash
-                             oc -n pipeline-app process hasura -l app=hasura,ENV=tst | oc apply -f -
+                             oc -n tmp process hasura -l app=hasura,ENV=tst | oc apply -f -
                              echo Rolled out the Template tst'''
 
                         }
@@ -139,12 +123,12 @@ pipeline {
                 } // script
                 script {
                     openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
+                        openshift.withProject("tmp") {
                              echo "Rolling outfrom template"
                              sh '''#/bin/bash
-                             oc -n pipeline-app process --param ENV=qas hasura -l app=hasura,ENV=qas | oc apply -f -
+                             oc -n tmp process --param ENV=qas hasura -l app=hasura,ENV=qas | oc apply -f -
                              echo Rolled out the QAS app
-			     # oc -n pipeline-app process --param ENV=prd hasura -l app=hasura-qas,ENV=prd | oc apply -f -
+			     # oc -n tmp process --param ENV=prd hasura -l app=hasura-qas,ENV=prd | oc apply -f -
                              echo Rolled out the PRD app
 			     echo *** please edit the ENV of the hasura deployment to connect to the db ***
 			    '''
@@ -155,24 +139,12 @@ pipeline {
 			     DB_USER=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_USER | head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
 			     DB_PASSWORD=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_PASSWORD | head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
 			
-			     oc set env deployment/hasura-qas HASURA_GRAPHQL_DATABASE_URL=postgres://$DB_USER:$DB_PASSWORD@postgres-qas.pipeline-app.svc:5432/hasura
+			     oc set env deployment/hasura-qas HASURA_GRAPHQL_DATABASE_URL=postgres://$DB_USER:$DB_PASSWORD@postgres-qas.tmp.svc:5432/hasura
 			     '''
 
                         }
                     }
                 } // script
-		 input message: "cleanup tst env? app: hasura-qas. Approve?", id: "approval"
-                    script {
-                    openshift.withCluster() {
-                        openshift.withProject("pipeline-app") {
-                             echo "Deleting tst env"
-                             sh '''#/bin/bash
-                             oc delete  all --selector=ENV=tst,app=hasura
-			     '''
-
-                        }
-                    }
-                } // script		
 		    
             } // steps
         } // stage

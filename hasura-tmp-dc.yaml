@@ -1,0 +1,113 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: hasura-template
+message: |-
+  The following service(s) have been created in your project: ${DATABASE_SERVICE_NAME}.
+          hasura version: ${HASURA_VERSION}
+          connection string HASURA_GRAPHQL_DATABASE_URL
+          https://github.com/hasura/graphql-engine
+metadata:
+  annotations:
+    description: |-
+      Provides api acces to postgrsql db
+    openshift.io/display-name: HasuraPostgreSQL
+    openshift.io/documentation-url: https://viaadocumentation.atlassian.net/wiki
+    openshift.io/long-description: This template provides a hasura instance for a  PostgreSQL
+       database
+
+    tags: database,postgresql,api,hasura
+  creationTimestamp: 2018-11-11T18:15:17Z
+  name: hasura-template
+objects:
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      creationTimestamp: '2019-03-13T12:12:16Z'
+      generation: 3
+      name: hasura-${PROJECT}-${ENV}
+
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        app: hasura-${PROJECT}-${ENV}
+        version: ${HASURA_VERSION}
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app:  hasura-${PROJECT}-${ENV}
+            version: ${HASURA_VERSION}
+        spec:
+          containers:
+            - image: hasura/graphql-engine:${HASURA_VERSION}
+              imagePullPolicy: IfNotPresent
+
+              name:  hasura-${PROJECT}-${ENV}
+              livenessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /
+                  port: 8080
+                  scheme: HTTP
+                periodSeconds: 30
+                successThreshold: 1
+                timeoutSeconds: 3
+              env:
+
+              - name: HASURA_GRAPHQL_DATABASE_URL
+                value: ${HASURA_GRAPHQL_DATABASE_URL}
+              - name: HASURA_GRAPHQL_ENABLE_CONSOLE
+                value: "true"
+              - name: ENV
+                value: "qas"
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              resources:
+                limits:
+                  cpu: 900m
+                  memory: ${MEMORY_LIMIT}
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+      test: false
+      triggers:
+        - type: ConfigChange
+    status:
+
+
+
+parameters:
+- name: ENV
+  value: tst
+- description: string version eg v1.0.0-beta.1
+  name: HASURA_VERSION
+  required: true
+  value: v1.0.0-beta.2
+- name: NAMESPACE
+  value: pipeline-app
+- name: PROJECT
+  value: avo2
+- name: MEMORY_LIMIT
+  value: 128Mi
+- name: HASURA_GRAPHQL_DATABASE_URL
+  value: postgres://username:password@hostname:port/dbname

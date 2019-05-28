@@ -1,6 +1,6 @@
 # Create pipeline demo projects in thie cluster
 #oc new-project ci-cd
-oc new-project pipeline-app --display-name="Pipeline Example - Build"
+oc new-project tmp --display-name="Pipeline Example - Build"
 #oc new-project pipeline-app-staging --display-name="Pipeline Example - Staging"
 ##oc adm policy add-scc-to-user privileged system:serviceaccount:pipeline-app:default --as system:admin --as-group system:admins -n pipeline-app
 
@@ -10,11 +10,7 @@ oc apply -f ./pipeline-git.yaml # note: this will pull from github off the maste
 ## setup pipeline
 #oc apply -f pipeline.yaml
 # Give this project an edit role on other related projects
-oc policy add-role-to-user edit system:serviceaccount:ci-cd:jenkins -n pipeline-app
-#oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pipeline-app-staging
-
-# Give the other related projects the role to pull images from pipeline-app
-#oc policy add-role-to-group system:image-puller system:serviceaccounts:pipeline-app-staging -n pipeline-app
+oc policy add-role-to-user edit system:serviceaccount:ci-cd:jenkins -n tmp
 
 # Wait for Jenkins to start
 oc project ci-cd
