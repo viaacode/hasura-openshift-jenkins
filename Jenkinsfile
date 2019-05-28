@@ -1,7 +1,7 @@
 /* import shared library */
 @Library('jenkins-shared-libs')_
 
-def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
+def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmp-dc.yaml'
 def TEMPLATENAME = 'hasura-template'
 def DB_TEMPL = 'postgresql-persistent'
 def TARGET_NS = 'tmp'
@@ -52,7 +52,7 @@ pipeline {
           				echo 'DB exists creating extention'
           				PGPOD=`oc -n tmp  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
                   echo "dbpod: $PGPOD"
-          				oc -n tmp exec -ti $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events "
+          				oc -n tmp exec -ti $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
           				'''
                             } else {sh'''#!/bin/bash
                                       echo "deploying the database"
@@ -71,7 +71,7 @@ pipeline {
                         openshift.withProject("tmp") {
 
 //			 def template
-				template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml').object()
+	//			template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmp-dc.yaml').object()
 //				template = templateSelector.object()
 //			    }
 
