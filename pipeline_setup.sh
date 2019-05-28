@@ -1,13 +1,13 @@
 # Create pipeline demo projects in thie cluster
 #oc new-project ci-cd
 OC_PROJECT=shared-components
-oc  new-project ${OC_PROJCT} || true
+oc  project ${OC_PROJCT}
 #new-project tmp --display-name="avo2 - Build"
 #oc new-project pipeline-app-staging --display-name="Pipeline Example - Staging"
 ##oc adm policy add-scc-to-user privileged system:serviceaccount:pipeline-app:default --as system:admin --as-group system:admins -n pipeline-app
 
 # Switch to the cicd and create the pipeline build from a template
-oc project ci-cd || echo "please setup ci-cd project with a jenkins DeploymentConfig"  && exit 1
+oc project ci-cd 
 oc apply -f ./pipeline-git.yaml # note: this will pull from github off the master branch
 
 oc policy add-role-to-user edit system:serviceaccount:ci-cd:jenkins -n ${OC_PROJECT}
