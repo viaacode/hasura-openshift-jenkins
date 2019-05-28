@@ -1,14 +1,12 @@
-//----------------------------------------------------------------------
-// This template originally from:
-// https://github.com/openshift/origin/blob/master/examples/jenkins/pipeline/nodejs-sample-pipeline.yaml
-//----------------------------------------------------------------------
+/* import shared library */
+@Library('jenkins-shared-libs')_
+
 def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml'
-def TEMPLATENAME = 'hasura'
+def TEMPLATENAME = 'hasura-template'
 def DB_TEMPL = 'postgresql-persistent'
 def TARGET_NS = 'tmp'
 def templateSelector = openshift.selector( "template", "hasura-template")
-    
-def templateExists = templateSelector.exists()
+
 
 
 
@@ -18,6 +16,7 @@ def templateExists = templateSelector.exists()
 pipeline {
     agent {
       node {
+   
         // spin up a pod to run this build on
         label 'master'
       }
@@ -74,12 +73,8 @@ pipeline {
 			    } else {
 				template = templateSelector.object()
 			    }				
-
-				
-                            // create a new application from the TEMPLATEPATH
-                          // openshift.newApp(TEMPLATEPATH)
-                           sh "oc -n tmp apply -f hasura-tmpl.yaml"
-			  // sh "oc apply -f postgresql-persistent.yaml"
+			
+			   sh "oc apply -f hasura-tmp-dc.yaml"
 			   sh '''#!/bin/bash
 			   DB_NAME=$(oc get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode)
                            POSTGRESQL_USER=$(oc get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode)
@@ -107,46 +102,14 @@ pipeline {
         } 
 
 
-       stage('Install and configue') {
-            steps {
-
-                script {
-                    openshift.withCluster() {
-                        openshift.withProject("tmp") {
-                             echo "Rolling out  build from template"
-                             sh '''#/bin/bash
-                             oc -n tmp process hasura -l app=hasura,ENV=tst | oc apply -f -
-                             echo Rolled out the Template tst'''
-
-                        }
-                    }
-                } // script
-                script {
-                    openshift.withCluster() {
-                        openshift.withProject("tmp") {
-                             echo "Rolling outfrom template"
-                             sh '''#/bin/bash
-                             oc -n tmp process --param ENV=qas hasura -l app=hasura,ENV=qas | oc apply -f -
-                             echo Rolled out the QAS app
-			     # oc -n tmp process --param ENV=prd hasura -l app=hasura-qas,ENV=prd | oc apply -f -
-                             echo Rolled out the PRD app
-			     echo *** please edit the ENV of the hasura deployment to connect to the db ***
-			    '''
-				echo "setting DB generated stuff in env for hasura pod"
-			    sh '''#!/bin/bash 
-			    
-			     DB_NAME=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_DB| head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
-			     DB_USER=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_USER | head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
-			     DB_PASSWORD=`oc get configmap postgres-qascnf -o yaml | grep POSTGRES_PASSWORD | head -n 1 | cut -f 2 -d ':'| sed 's/ //g'`
-			
-			     oc set env deployment/hasura-qas HASURA_GRAPHQL_DATABASE_URL=postgres://$DB_USER:$DB_PASSWORD@postgres-qas.tmp.svc:5432/hasura
-			     '''
-
-                        }
-                    }
-                } // script
-		    
-            } // steps
-        } // stage
     } // stages
+    post {
+        always {
+            script {
+               slackNotifier(currentBuild.currentResult)
+            }
+        }
+    }
+
+	
 } // pipeline
