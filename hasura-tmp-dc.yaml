@@ -48,6 +48,7 @@ objects:
           creationTimestamp: null
           labels:
             app:  hasura-${PROJECT}-${ENV}
+            component: hasura
             version: ${HASURA_VERSION}
         spec:
           containers:
@@ -94,6 +95,28 @@ objects:
         - type: ConfigChange
     status:
 
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      labels:
+          app:  hasura-${PROJECT}-${ENV}
+          version: ${HASURA_VERSION}
+      name: hasura-${PROJECT}-${ENV}
+    spec:
+      ports:
+      - name: http
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+      selector:
+        component: hasura
+        app:  hasura-${PROJECT}-${ENV}
+
+      sessionAffinity: None
+      type: ClusterIP
+    status:
+      loadBalancer: {}
 
 
 parameters:
