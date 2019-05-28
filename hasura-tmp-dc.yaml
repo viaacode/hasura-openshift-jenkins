@@ -49,6 +49,7 @@ objects:
           labels:
             app: hasura-${PROJECT}-${ENV}
             component: hasura
+            ENV: ${ENV}
             version: ${HASURA_VERSION}
         spec:
           containers:
@@ -122,7 +123,7 @@ objects:
 
 parameters:
 - name: ENV
-  value: tst
+  value: qas
 - description: string version eg v1.0.0-beta.1
   name: HASURA_VERSION
   required: true

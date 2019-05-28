@@ -52,11 +52,11 @@ pipeline {
           				echo 'DB exists creating extention'
           				PGPOD=`oc -n tmp  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
                   echo "dbpod: $PGPOD"
-          				oc -n tmp exec -ti $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
+          				oc -n tmp exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
           				'''
                             } else {sh'''#!/bin/bash
                                       echo "deploying the database"
-                                    #  oc process -l=APP=hazura-qas -pMEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
+                                    #  oc process -l=APP=hazura-qas -p MEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
                                     '''
                               }
                         }
@@ -80,7 +80,7 @@ pipeline {
                              POSTGRESQL_PASSWORD=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
                     			   echo ${POSTGRESQL_USER}
 
-                    			   oc process -l app=avo2-events,ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc apply -f -
+                    			   oc process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc apply -f -
                              oc -n tmp get deploymentconfig  && echo SUCCESS
                              oc -n tmp env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME}
                                '''
