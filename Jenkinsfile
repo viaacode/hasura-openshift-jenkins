@@ -86,7 +86,7 @@ pipeline {
                              POSTGRESQL_PASSWORD=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
                     			   echo ${POSTGRESQL_USER}
 
-                    			   oc -n shared-components process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  -n shared-componentsapply -f -
+                    			   oc -n shared-components process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  -n shared-componentsapply  apply -f -
                              oc -n shared-components get deploymentconfig  && echo SUCCESS
                              oc -n shared-components env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME}
                                '''
