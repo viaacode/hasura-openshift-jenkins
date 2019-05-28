@@ -16,7 +16,7 @@ def templateSelector = openshift.selector( "template", "hasura-template")
 pipeline {
     agent {
       node {
-   
+
         // spin up a pod to run this build on
         label 'master'
       }
@@ -34,7 +34,7 @@ pipeline {
                             echo "Using project: ${openshift.project()}"
                             echo "We need anyuid for postgresql"
 			     sh '''#!/bin/bash
-                               echo this is setup by the bash script 
+                               echo this is setup by the bash script
                                #oc adm policy add-scc-to-user anyuid -n tmp  -z default
                             '''
                         }
@@ -50,13 +50,14 @@ pipeline {
                             if (openshift.selector("deploymentconfig", "db-avo2-events-qas").exists()) {
 			       sh '''#!/bin/bash
 				echo 'DB exists creating extention'
-				PGPOD=$(oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}') 
-				oc exec -ti $PGPOD -- bash -c "psql -c 'CREATE extension pgcrypto;' events dbmaster" || echo extention exists
+				PGPOD=$(oc get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}')
+        echo "dbpod: ${PGPOD}"
+				oc exec -ti ${PGPOD} -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events "
 				'''
                             } else {sh'''#!/bin/bash
                                       oc process -l=APP=hazura-qas -pMEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
-                                    '''  
-                              }	
+                                    '''
+                              }
                         }
                     }
                 } // script
@@ -67,21 +68,21 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("tmp") {
-				
+
 			 def template
 			    if (!templateExists) {
 				template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmpl.yaml').object()
 			    } else {
 				template = templateSelector.object()
-			    }				
-			
+			    }
+
 			   sh "oc apply -f hasura-tmp-dc.yaml"
 			   sh '''#!/bin/bash
 			   DB_NAME=$(oc get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode)
                            POSTGRESQL_USER=$(oc get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode)
                            POSTGRESQL_PASSWORD=$(oc get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode)
 			   echo ${HASURA_GRAPHQL_DATABASE_URL}
-			   oc process -l app=avo2-events,ENV=qas,HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME} -p MEMORY_LIMIT=128Mi  -f hasura-tmpl.yaml | oc apply -f - 
+			   oc process -l app=avo2-events,ENV=qas,HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME} -p MEMORY_LIMIT=128Mi  -f hasura-tmpl.yaml | oc apply -f -
                            oc -n tmp get deploymentconfig  && echo SUCCESS
                                '''
                         }
@@ -95,12 +96,12 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("tmp") {
                              echo "No Test yet"
-                    
+
                         }
                     }
-                } 
-            } 
-        } 
+                }
+            }
+        }
 
 
     } // stages
@@ -112,5 +113,5 @@ pipeline {
         }
     }
 
-	
+
 } // pipeline
