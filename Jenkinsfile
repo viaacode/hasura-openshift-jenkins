@@ -56,7 +56,7 @@ pipeline {
           				'''
                             } else {sh'''#!/bin/bash
                                       echo "deploying the database"
-                                      oc -n shared-components process -l app=avo2-events -p MEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc -n shared-components apply -f -
+                                      oc -n shared-components process -l app=avo2-events -p MEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc  apply -f -
                                       echo waiting roll out
                                       sleep 45
 
@@ -86,7 +86,7 @@ pipeline {
                              POSTGRESQL_PASSWORD=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
                     			   echo ${POSTGRESQL_USER}
 
-                    			   oc -n shared-components process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  -n shared-componentsapply  apply -f -
+                    			   oc -n shared-components process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  apply -f -
                              oc -n shared-components get deploymentconfig  && echo SUCCESS
                              oc -n shared-components env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME}
                                '''
