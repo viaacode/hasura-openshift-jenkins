@@ -47,7 +47,7 @@ objects:
         metadata:
           creationTimestamp: null
           labels:
-            app:  hasura-${PROJECT}-${ENV}
+            app: hasura-${PROJECT}-${ENV}
             component: hasura
             version: ${HASURA_VERSION}
         spec:
@@ -55,7 +55,7 @@ objects:
             - image: hasura/graphql-engine:${HASURA_VERSION}
               imagePullPolicy: IfNotPresent
 
-              name:  hasura-${PROJECT}-${ENV}
+              name: hasura-${PROJECT}-${ENV}
               livenessProbe:
                 failureThreshold: 3
                 httpGet:
@@ -100,7 +100,8 @@ objects:
     metadata:
       creationTimestamp: null
       labels:
-          app:  hasura-${PROJECT}-${ENV}
+          ENV: qas
+          app: hasura-${PROJECT}-${ENV}
           version: ${HASURA_VERSION}
       name: hasura-${PROJECT}-${ENV}
     spec:
@@ -111,7 +112,7 @@ objects:
         targetPort: 8080
       selector:
         component: hasura
-        app:  hasura-${PROJECT}-${ENV}
+        app: hasura-${PROJECT}-${ENV}
 
       sessionAffinity: None
       type: ClusterIP
