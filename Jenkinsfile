@@ -70,22 +70,20 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject("tmp") {
 
-//			 def template
-	//			template = openshift.create('https://raw.githubusercontent.com/viaacode/hasura-openshift-jenkins/master/hasura-tmp-dc.yaml').object()
-//				template = templateSelector.object()
-//			    }
 
-			   sh "oc apply -f hasura-tmp-dc.yaml"
-			   sh '''#!/bin/bash
-			   DB_NAME=$(oc get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode)
-         POSTGRESQL_USER=$(oc get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode)
-         POSTGRESQL_PASSWORD=$(oc get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode)
-			   echo ${POSTGRESQL_USER}
-			   oc process -l app=avo2-events,ENV=qas,HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME} -p MEMORY_LIMIT=128Mi  -f hasura-tmpl.yaml | oc apply -f -
-                           oc -n tmp get deploymentconfig  && echo SUCCESS
+
+                    			   sh "oc apply -f hasura-tmp-dc.yaml"
+                    			   sh '''#!/bin/bash
+                             oc project tmp
+                    			   DB_NAME=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode`
+                             POSTGRESQL_USER=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode`
+                             POSTGRESQL_PASSWORD=`oc -n tmp get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
+                    			   echo ${POSTGRESQL_USER}
+                    			   oc process -l app=avo2-events,ENV=qas,HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME} -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc apply -f -
+                             oc -n tmp get deploymentconfig  && echo SUCCESS
                                '''
-                        }
-                    }
+                                            }
+                                        }
                 } // script
             } // steps
         } // stage
