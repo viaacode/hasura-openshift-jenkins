@@ -57,6 +57,12 @@ pipeline {
                             } else {sh'''#!/bin/bash
                                       echo "deploying the database"
                                       oc process -l=APP=hazura-qas -p MEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc apply -f -
+                                      echo waiting roll out  
+                                      sleep 45
+
+                                      PGPOD=`oc -n tmp  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
+                                      echo "dbpod: $PGPOD"
+                              				oc -n tmp exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
                                     '''
                               }
                         }
