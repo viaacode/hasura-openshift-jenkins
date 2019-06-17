@@ -25,13 +25,15 @@ objects:
     metadata:
       creationTimestamp: '2019-03-13T12:12:16Z'
       generation: 3
-      name: hasura-${PROJECT}-${ENV}
+      name: ${PREFIXNAME}-${PROJECT}-hasura-${ENV}
 
     spec:
       replicas: 1
       revisionHistoryLimit: 10
       selector:
-        app: hasura-${PROJECT}-${ENV}
+        app: ${PREFIXNAME}-${PROJECT}
+        component: hasura
+        ENV: ${ENV}
         version: ${HASURA_VERSION}
       strategy:
         activeDeadlineSeconds: 21600
@@ -47,7 +49,7 @@ objects:
         metadata:
           creationTimestamp: null
           labels:
-            app: hasura-${PROJECT}-${ENV}
+            app: ${PREFIXNAME}-${PROJECT}
             component: hasura
             ENV: ${ENV}
             version: ${HASURA_VERSION}
@@ -101,10 +103,11 @@ objects:
     metadata:
       creationTimestamp: null
       labels:
-          ENV: qas
-          app: hasura-${PROJECT}-${ENV}
-          version: ${HASURA_VERSION}
-      name: hasura-${PROJECT}-${ENV}
+        component: hasura
+        app: ${PREFIXNAME}-${PROJECT}
+        ENV: ${ENV}
+        version: ${HASURA_VERSION}
+      name: ${PREFIXNAME}-${PROJECT}-${ENV}
     spec:
       ports:
       - name: http
@@ -113,7 +116,9 @@ objects:
         targetPort: 8080
       selector:
         component: hasura
-        app: hasura-${PROJECT}-${ENV}
+        app: ${PREFIXNAME}-${PROJECT}
+        ENV: ${ENV}
+        version: ${HASURA_VERSION}
 
       sessionAffinity: None
       type: ClusterIP
@@ -131,7 +136,9 @@ parameters:
 - name: NAMESPACE
   value: shared-components
 - name: PROJECT
-  value: avo2
+  value: events
+- name: PREFIXNAME
+  value: sc
 - name: MEMORY_LIMIT
   value: 128Mi
 - name: HASURA_GRAPHQL_DATABASE_URL

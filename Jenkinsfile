@@ -47,20 +47,21 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("shared-components") {
-                            if (openshift.selector("deploymentconfig", "db-avo2-events-qas").exists()) {
-			       sh '''#!/bin/bash
-          				echo 'DB exists creating extention'
-          				PGPOD=`oc -n shared-components  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
-                  echo "dbpod: $PGPOD"
-          				oc -n shared-components exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
-          				'''
-                            } else {sh'''#!/bin/bash
+                            if (openshift.selector("deploymentconfig", "sc-events-db-qas").exists()) {
+                			        sh '''#!/bin/bash
+                        				echo 'DB exists creating extention'
+                        				PGPOD=`oc -n shared-components  get pods --selector=deploymentconfig=sc-events-db-qas | grep "Running" | awk '{print $1}' `
+                                echo "dbpod: $PGPOD"
+                        				oc -n shared-components exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
+                          				'''
+                            } else {
+                                  sh'''#!/bin/bash
                                       echo "deploying the database"
-                                      oc -n shared-components process -l app=avo2-events -p MEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=db-avo2-events-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc  apply -f -
+                                      oc -n shared-components process -l app=sc-events -p MEMORY_LIMIT=128Mi -p DATABASE_SERVICE_NAME=sc-events-db-qas -p ENV=qas -p POSTGRESQL_USER=dbmaster -p POSTGRESQL_DATABASE=events -p VOLUME_CAPACITY=666Mi -p POSTGRESQL_VERSION=9.6 -f postgresql-persistent.yaml | oc  apply -f -
                                       echo waiting roll out
                                       sleep 45
 
-                                      PGPOD=`oc -n shared-components  get pods --selector=deploymentconfig=db-avo2-events-qas | grep "Running" | awk '{print $1}' `
+                                      PGPOD=`oc -n shared-components  get pods --selector=deploymentconfig=sc-events-db-qas | grep "Running" | awk '{print $1}' `
                                       echo "dbpod: $PGPOD"
                               				oc -n shared-components exec -t $PGPOD -- bash -c "psql -c 'CREATE extension IF NOT EXISTS pgcrypto;' events " ;true
                                     '''
@@ -75,20 +76,16 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("shared-components") {
-
-
-
                     			   sh "oc -n shared-components apply -f hasura-tmp-dc.yaml"
                     			   sh '''#!/bin/bash
                              oc project shared-components
-                    			   DB_NAME=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode`
-                             POSTGRESQL_USER=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode`
-                             POSTGRESQL_PASSWORD=`oc -n shared-components get secrets db-avo2-events-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
+                    			   DB_NAME=`oc -n shared-components get secrets sc-events-db-qas -o yaml |grep database-name |head -n 1 | awk '{print $2}' | base64 --decode`
+                             POSTGRESQL_USER=`oc -n shared-components get secrets sc-events-db-qas -o yaml |grep database-user |head -n 1 | awk '{print $2}' | base64 --decode`
+                             POSTGRESQL_PASSWORD=`oc -n shared-components get secrets sc-events-db-qas -o yaml |grep database-password |head -n 1 | awk '{print $2}' | base64 --decode`
                     			   echo ${POSTGRESQL_USER}
-
-                    			   oc -n shared-components process -l app=avo2-events,ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  apply -f -
+                    			   oc -n shared-components process -l app=sc-events -l ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  apply -f -
                              oc -n shared-components get deploymentconfig  && echo SUCCESS
-                             oc -n shared-components env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@db-avo2-events-qas:5432/${DB_NAME}
+                             oc -n shared-components env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@sc-events-db-qas:5432/${DB_NAME}
                                '''
                                             }
                                         }
