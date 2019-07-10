@@ -85,7 +85,7 @@ pipeline {
                     			   echo ${POSTGRESQL_USER}
                     			   oc -n shared-components process -l app=sc-events -l ENV=qas -p ENV=qas -p MEMORY_LIMIT=128Mi  -f hasura-tmp-dc.yaml | oc  apply -f -
                              oc -n shared-components get deploymentconfig  && echo SUCCESS
-                             oc -n shared-components env dc/hasura-avo2-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@sc-events-db-qas:5432/${DB_NAME}
+                             oc -n shared-components env dc/sc-events-qas HASURA_GRAPHQL_DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@sc-events-db-qas:5432/${DB_NAME}
                                '''
                                             }
                                         }
